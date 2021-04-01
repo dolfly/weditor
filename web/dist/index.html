@@ -163,7 +163,7 @@
                   </td>
                 </tr>
                 <tr v-for="key in filterAttributeKeys(elem)" :key="key">
-                  <td>{{!"* " + key}}</td>
+                  <td>{{"* " + key}}</td>
                   <td><code v-text="elem[key]" class="prop-value"></code></td>
                 </tr>
                 <tr v-if="elem.rect">
