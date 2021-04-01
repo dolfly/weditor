@@ -2,10 +2,12 @@ package http
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -27,8 +29,24 @@ type Message struct {
 	Value  interface{} `json:"value"`
 }
 
+func lookupPythonPath() (pypath string, err error) {
+	pypath, err = exec.LookPath("python3")
+	if err == nil {
+		return
+	}
+	pypath, err = exec.LookPath("python")
+	if err == nil {
+		return
+	}
+	return
+}
+
 func prepare(callback func(tty *os.File)) (tty *os.File, pycmd *exec.Cmd, err error) {
-	pycmd = exec.Command("/usr/local/bin/python", "-u", web.TempScript())
+	pypath, err := lookupPythonPath()
+	if err != nil {
+		return
+	}
+	pycmd = exec.Command(pypath, "-u", web.TempScript())
 	pycmd.Env = append(os.Environ(),
 		"PYTHONIOENCODING=utf-8")
 	tty, err = pty.Start(pycmd)
@@ -53,26 +71,28 @@ func Python(c *gin.Context) {
 		for scanner.Scan() {
 			text := scanner.Text()
 			arr := strings.Split(text, ":")
+			print(text)
 			if len(arr) < 2 {
 				continue
 			}
 			cmdx, value := arr[0], strings.Join(arr[1:], ":")
-			switch cmdx {
+			switch strings.TrimLeft(cmdx, "> ") {
 			case "LNO":
+				v, _ := strconv.Atoi(value)
 				ws.WriteJSON(Message{
 					Method: "gotoLine",
-					Value:  value,
+					Value:  v,
 				})
 			case "DBG":
-				// ws.WriteJSON(Message{
-				// 	Method: "output",
-				// 	Value:  "-" + value + "\n",
-				// })
+				ws.WriteJSON(Message{
+					Method: "output",
+					Value:  "-" + value + "\n",
+				})
 			case "WRT":
-				// ws.WriteJSON(Message{
-				// 	Method: "output",
-				// 	Value:  "> " + value + "\n",
-				// })
+				ws.WriteJSON(Message{
+					Method: "output",
+					Value:  "> " + value + "\n",
+				})
 			case "EOF":
 				ws.WriteJSON(Message{
 					Method: "finish",
@@ -98,8 +118,9 @@ func Python(c *gin.Context) {
 		tty.Close()
 	}()
 	adjust := func(code interface{}) []byte {
-		str := code.(string)
-		return []byte(str + "\n")
+		var buf bytes.Buffer
+		fmt.Fprintln(&buf, code.(string))
+		return buf.Bytes()
 	}
 	for {
 		var (
@@ -107,7 +128,7 @@ func Python(c *gin.Context) {
 			err error
 		)
 		msg = Message{}
-		ws.ReadJSON(&msg)
+		err = ws.ReadJSON(&msg)
 		if err != nil {
 			break
 		}
@@ -142,40 +163,6 @@ func Python(c *gin.Context) {
 					Value:  err.Error(),
 				})
 			}
-			// if err != nil {
-			// 	ws.WriteJSON(Message{
-			// 		Method: "output",
-			// 		Value:  "tty close:" + err.Error(),
-			// 	})
-			// }
-			// } else {
-			// 	tty, err = pty.Start(pycmd)
-			// 	if err != nil {
-			// 		ws.WriteJSON(Message{
-			// 			Method: "output",
-			// 			Value:  "pty:" + err.Error(),
-			// 		})
-			// 	}
-			// }
-			// if pycmd.Process != nil {
-			// 	err := pycmd.Process.Kill()
-			// 	if err == nil {
-			// 		ws.WriteJSON(Message{
-			// 			Method: "restarted",
-			// 			Value:  "success",
-			// 		})
-			// 	} else {
-			// 		ws.WriteJSON(Message{
-			// 			Method: "restarted",
-			// 			Value:  err.Error(),
-			// 		})
-			// 	}
-			// } else {
-			// 	ws.WriteJSON(Message{
-			// 		Method: "restarted",
-			// 		Value:  "not exec",
-			// 	})
-			// }
 		default:
 			ws.WriteJSON(Message{
 				Method: "default",
