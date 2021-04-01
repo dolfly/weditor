@@ -56,7 +56,6 @@ func Connect(c *gin.Context) {
 
 func Device(c *gin.Context) {
 	rurl := c.Param("rurl")
-
 	remote, err := url.Parse(strings.TrimLeft(rurl, "/"))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -66,14 +65,14 @@ func Device(c *gin.Context) {
 		return
 	}
 	durl := fmt.Sprintf("%s://%s", remote.Scheme, remote.Host)
-	switch strings.ToLower(remote.Path) {
-	case "/hierarchy":
+	switch strings.TrimLeft(strings.ToLower(remote.Path), "/") {
+	case "hierarchy":
 		c.JSON(http.StatusOK, hierarchy(durl))
 		return
-	case "/screenshot":
+	case "screenshot":
 		c.JSON(http.StatusOK, screenshot(durl))
 		return
-	case "/exec":
+	case "exec":
 		c.JSON(http.StatusOK, gin.H{
 			"success":  true,
 			"duration": 22222,
@@ -83,8 +82,13 @@ func Device(c *gin.Context) {
 	default:
 	}
 }
+func Widget(c *gin.Context) {
+	req := map[string]interface{}{}
+	c.BindJSON(&req)
+	c.JSON(http.StatusOK, req)
+}
 func Quit(c *gin.Context) {
-
+	c.JSON(http.StatusOK, gin.H{})
 }
 func screenshot(durl string) gin.H {
 	// ua := uiautomator.Connect(durl)
