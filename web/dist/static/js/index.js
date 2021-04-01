@@ -442,7 +442,7 @@ window.vm = new Vue({
       if (ret.responseJSON && ret.responseJSON.description) {
         this.showError(ret.responseJSON.description);
       } else {
-        this.showError("<p>Local server not started, start with</p>");
+        this.showError("<p>server connect error,please refresh.</p>");
       }
     },
     initJstree: function () {
