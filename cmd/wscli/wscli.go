@@ -19,7 +19,7 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	conn, _, err := websocket.DefaultDialer.Dial("ws://127.0.0.1:8833/ws/v1/python", nil)
+	conn, _, err := websocket.DefaultDialer.Dial("ws://127.0.0.1:21402/ws/v1/python", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

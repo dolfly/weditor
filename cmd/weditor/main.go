@@ -17,7 +17,7 @@ func main() {
 	app.Usage = ""
 	app.Version = httpapi.Version
 	app.Flags = []cli.Flag{
-		&cli.IntFlag{Name: "port", Aliases: []string{"p"}, Value: 17310},
+		&cli.IntFlag{Name: "port", Aliases: []string{"p"}, Value: 21402},
 		&cli.StringFlag{Name: "addr", Aliases: []string{"a"}, Value: "127.0.0.1"},
 		&cli.BoolFlag{Name: "debug", Aliases: []string{"d"}, Value: false},
 	}

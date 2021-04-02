@@ -29,18 +29,6 @@ type Message struct {
 	Value  interface{} `json:"value"`
 }
 
-func lookupPythonPath() (pypath string, err error) {
-	pypath, err = exec.LookPath("python3")
-	if err == nil {
-		return
-	}
-	pypath, err = exec.LookPath("python")
-	if err == nil {
-		return
-	}
-	return
-}
-
 func prepare(callback func(tty *os.File)) (tty *os.File, pycmd *exec.Cmd, err error) {
 	pypath, err := lookupPythonPath()
 	if err != nil {
