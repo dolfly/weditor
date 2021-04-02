@@ -2,7 +2,7 @@ package http
 
 import (
 	"bufio"
-	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -57,7 +57,7 @@ func prepare(callback func(tty *os.File)) (tty *os.File, pycmd *exec.Cmd, err er
 	return
 }
 
-func Python(c *gin.Context) {
+func ActionPython(c *gin.Context) {
 	ws, err := upgrade.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		fmt.Println(err)
@@ -71,7 +71,6 @@ func Python(c *gin.Context) {
 		for scanner.Scan() {
 			text := scanner.Text()
 			arr := strings.Split(text, ":")
-			print(text)
 			if len(arr) < 2 {
 				continue
 			}
@@ -118,9 +117,8 @@ func Python(c *gin.Context) {
 		tty.Close()
 	}()
 	adjust := func(code interface{}) []byte {
-		var buf bytes.Buffer
-		fmt.Fprintln(&buf, code.(string))
-		return buf.Bytes()
+		data, _ := json.Marshal(code)
+		return append(data, []byte("\n")...)
 	}
 	for {
 		var (

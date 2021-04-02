@@ -14,14 +14,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Version(c *gin.Context) {
+var Version string = "0.0.1"
+
+func ActionVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"name":    "weditor",
-		"version": "0.0.6",
+		"version": Version,
 	})
 }
 
-func Connect(c *gin.Context) {
+func ActionConnect(c *gin.Context) {
 	platform := strings.ToLower(c.PostForm("platform"))
 	deviceurl := c.PostForm("deviceUrl")
 	_ = func(platform, url string) string {
@@ -54,7 +56,7 @@ func Connect(c *gin.Context) {
 	})
 }
 
-func Device(c *gin.Context) {
+func ActionDevice(c *gin.Context) {
 	rurl := c.Param("rurl")
 	remote, err := url.Parse(strings.TrimLeft(rurl, "/"))
 	if err != nil {
@@ -82,12 +84,12 @@ func Device(c *gin.Context) {
 	default:
 	}
 }
-func Widget(c *gin.Context) {
+func ActionWidget(c *gin.Context) {
 	req := map[string]interface{}{}
 	c.BindJSON(&req)
 	c.JSON(http.StatusOK, req)
 }
-func Quit(c *gin.Context) {
+func ActionQuit(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 func screenshot(durl string) gin.H {
